@@ -1,0 +1,11 @@
+version: "1"
+packages:
+    - name: "db"
+      path: "./internal/dpsql"
+      queries: "./db/query/"
+      schema: "./db/migration/"
+      engine: "postgresql"
+      emit_json_tags: true
+      emit_exact_table_names: true
+      emit_empty_slices: true
+      sql_package: "pgx/v4"
