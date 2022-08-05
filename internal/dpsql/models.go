@@ -36,6 +36,13 @@ type Cart struct {
 	UpdatedAt  sql.NullTime `json:"updated_at"`
 }
 
+type CartItem struct {
+	ID        int64 `json:"id"`
+	Quantity  int64 `json:"quantity"`
+	CartID    int64 `json:"cart_id"`
+	ProductID int64 `json:"product_id"`
+}
+
 type Customer struct {
 	ID        int64        `json:"id"`
 	Name      string       `json:"name"`
