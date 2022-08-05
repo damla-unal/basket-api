@@ -31,6 +31,7 @@ type Cart struct {
 	TotalPrice int64        `json:"total_price"`
 	Vat        int64        `json:"vat"`
 	Discount   int64        `json:"discount"`
+	CustomerID int64        `json:"customer_id"`
 	Status     CartStatus   `json:"status"`
 	CreatedAt  sql.NullTime `json:"created_at"`
 	UpdatedAt  sql.NullTime `json:"updated_at"`

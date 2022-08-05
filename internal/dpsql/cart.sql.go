@@ -10,7 +10,7 @@ import (
 const createCart = `-- name: CreateCart :one
 INSERT INTO cart (total_price, vat, discount, status)
 VALUES ($1, $2, $3, $4)
-RETURNING id, total_price, vat, discount, status, created_at, updated_at
+RETURNING id, total_price, vat, discount, customer_id, status, created_at, updated_at
 `
 
 type CreateCartParams struct {
@@ -33,6 +33,7 @@ func (q *Queries) CreateCart(ctx context.Context, arg CreateCartParams) (Cart, e
 		&i.TotalPrice,
 		&i.Vat,
 		&i.Discount,
+		&i.CustomerID,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
