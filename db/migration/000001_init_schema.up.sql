@@ -24,12 +24,15 @@ CREATE TABLE "order"
     created_at  TIMESTAMP DEFAULT now()
 );
 
+CREATE TYPE cart_status AS ENUM ('saved', 'completed');
+
 CREATE TABLE cart
 (
     id          BIGSERIAL PRIMARY KEY,
-    total_price BIGINT NOT NULL,
-    vat         BIGINT NOT NULL,
-    discount    BIGINT NOT NULL,
+    total_price BIGINT      NOT NULL,
+    vat         BIGINT      NOT NULL,
+    discount    BIGINT      NOT NULL,
+    status      cart_status NOT NULL,
     created_at  TIMESTAMP DEFAULT now(),
     updated_at  TIMESTAMP DEFAULT now()
 );
