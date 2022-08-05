@@ -1,21 +1,38 @@
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"basket-api/internal/persistence"
+	"basket-api/internal/route"
+	"context"
+	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/spf13/viper"
+)
 
 type Server struct {
 	router *gin.Engine
+	DbPool *pgxpool.Pool
 }
 
-func New() *Server {
+func New() (*Server, error) {
 	var server = &Server{}
-	server.setupRouter()
-	return server
+	err := server.setupRouter()
+	if err != nil {
+		return nil, err
+	}
+	return server, nil
 
 }
 
-func (s *Server) setupRouter() {
+func (s *Server) setupRouter() error {
 	//gin.Default returns an Engine instance with the Logger and Recovery middleware already attached.
 	router := gin.Default()
+
+	postgresUrl := viper.GetString("postgres.url")
+	dbPool, err := pgxpool.Connect(context.Background(), postgresUrl)
+	if err != nil {
+		return err
+	}
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -23,8 +40,14 @@ func (s *Server) setupRouter() {
 		})
 	})
 
-	//TODO add routes
+	basketApiGroup := router.Group("/api")
+	{
+		route.AddProductRoutes(basketApiGroup, persistence.NewProductDAOPostgres(dbPool))
+	}
+
 	s.router = router
+	s.DbPool = dbPool
+	return nil
 
 }
 

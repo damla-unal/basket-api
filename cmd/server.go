@@ -15,9 +15,15 @@ var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Run the basket REST api",
 	Run: func(cmd *cobra.Command, args []string) {
-		server := api.New()
+		server, err := api.New()
+		if err != nil {
+			log.Fatal("cannot create server: ", err)
+		}
+		// Close closes all connections in the pool and rejects future Acquire calls.
+		// Blocks until all connections are returned to pool and closed.
+		defer server.DbPool.Close()
 
-		err := server.Start(":" + viper.GetString("http_server.port"))
+		err = server.Start(":" + viper.GetString("http_server.port"))
 		if err != nil {
 			log.Fatal("cannot start server:", err)
 		}
