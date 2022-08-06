@@ -50,7 +50,10 @@ func (s *Server) setupRouter() error {
 	{
 		route.AddProductRoutes(basketApiGroup, persistence.NewProductDAOPostgres(dbPool))
 		route.AddCartRoutes(basketApiGroup,
-			service.NewCartServiceImp(persistence.NewCartDAOPostgres(dbPool), persistence.NewCartItemDAOPostgres(dbPool), baseValidator))
+			service.NewCartServiceImp(
+				persistence.NewCartDAOPostgres(dbPool),
+				persistence.NewCartItemDAOPostgres(dbPool),
+				baseValidator))
 	}
 
 	s.router = router

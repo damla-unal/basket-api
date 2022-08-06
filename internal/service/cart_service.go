@@ -10,7 +10,8 @@ import (
 
 type CartService interface {
 	ShowCustomerCart(ctx context.Context, customerID int) (model.Cart, error)
-	ValidateCustomerCartRequest(request request.CustomerCartRequest) error
+	AddItemToCart(ctx context.Context, request request.CartItemRequest) error
+	//ValidateCustomerCartRequest(request request.CustomerCartRequest) error
 }
 
 type CartServiceImp struct {
@@ -21,7 +22,10 @@ type CartServiceImp struct {
 
 var _ CartService = (*CartServiceImp)(nil)
 
-func NewCartServiceImp(cartDAO persistence.CartDAO, cartItemDAO persistence.CartItemDAOPostgres, validator *validator.Validate) CartServiceImp {
+func NewCartServiceImp(
+	cartDAO persistence.CartDAO,
+	cartItemDAO persistence.CartItemDAOPostgres,
+	validator *validator.Validate) CartServiceImp {
 	return CartServiceImp{
 		cartDAO:     cartDAO,
 		cartItemDAO: cartItemDAO,
@@ -42,9 +46,21 @@ func (c CartServiceImp) ShowCustomerCart(ctx context.Context, customerID int) (m
 	return customerCart, nil
 }
 
-func (c CartServiceImp) ValidateCustomerCartRequest(request request.CustomerCartRequest) error {
-	if err := c.Validator.Struct(request); err != nil {
+func (c CartServiceImp) AddItemToCart(ctx context.Context, request request.CartItemRequest) error {
+	customerCart, err := c.cartDAO.GetCartByCustomerID(ctx, request.CustomerID)
+	if err != nil {
+		return err
+	}
+	err = c.cartItemDAO.UpsertCartItem(ctx, int(customerCart.ID), request.ProductID, customerCart.TotalPrice)
+	if err != nil {
 		return err
 	}
 	return nil
 }
+
+//func (c CartServiceImp) ValidateCustomerCartRequest(request request.CustomerCartRequest) error {
+//	if err := c.Validator.Struct(request); err != nil {
+//		return err
+//	}
+//	return nil
+//}

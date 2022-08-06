@@ -4,12 +4,14 @@ import (
 	db "basket-api/internal/dpsql"
 	"basket-api/internal/model"
 	"context"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 )
 
 type CartItemDAO interface {
 	GetCartItemsByCartID(ctx context.Context, cartID int) ([]model.CartItem, error)
+	UpsertCartItem(ctx context.Context, cartID int, productID int, cartPrice int64) error
 }
 
 type CartItemDAOPostgres struct {
@@ -37,6 +39,41 @@ func (c CartItemDAOPostgres) GetCartItemsByCartID(ctx context.Context, cartID in
 
 	})
 	return cartItems, resErr
+}
+
+func (c CartItemDAOPostgres) UpsertCartItem(ctx context.Context, cartID int, productID int, price int64) error {
+
+	resErr := c.dbPool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		queries := db.New(tx)
+
+		product, err := queries.GetProductByID(ctx, int64(productID))
+		if err != nil {
+			return errors.Wrap(err, "unable to find product")
+		}
+
+		upsertParams := db.UpsertCartItemParams{
+			Quantity:  1,
+			CartID:    int64(cartID),
+			ProductID: int64(productID),
+		}
+		err = queries.UpsertCartItem(ctx, upsertParams)
+		if err != nil {
+			return errors.Wrap(err, "unable to upsert cart item")
+		}
+		updateCartParams := db.UpdateCartParams{
+			Price:    product.Price + price,
+			Vat:      0,
+			Discount: 0,
+			Status:   "saved",
+			ID:       int64(cartID),
+		}
+		err = queries.UpdateCart(ctx, updateCartParams)
+		if err != nil {
+			return errors.Wrap(err, "unable to update cart")
+		}
+		return nil
+	})
+	return resErr
 }
 
 func createCartItemModelFromDpSQLModel(dbCartItem db.GetCartItemsByCartIDRow) model.CartItem {

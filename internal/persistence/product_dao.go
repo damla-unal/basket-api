@@ -10,6 +10,7 @@ import (
 
 type ProductDAO interface {
 	ListProducts(ctx context.Context) ([]model.Product, error)
+	GetProductByID(ctx context.Context, id int) (model.Product, error)
 }
 
 type ProductDAOPostgres struct {
@@ -37,6 +38,21 @@ func (p ProductDAOPostgres) ListProducts(ctx context.Context) ([]model.Product, 
 
 	})
 	return products, resErr
+}
+
+func (p ProductDAOPostgres) GetProductByID(ctx context.Context, id int) (model.Product, error) {
+	var product model.Product
+	resErr := p.dbPool.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
+		dbProduct, err := db.New(conn).GetProductByID(ctx, int64(id))
+		if err != nil {
+			return errors.Wrap(err, "unable to get product by ID")
+		}
+		product = createProductModelFromDpSQLModel(dbProduct)
+		return nil
+
+	})
+	return product, resErr
+
 }
 
 func createProductModelFromDpSQLModel(dbProduct db.Product) model.Product {
