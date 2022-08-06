@@ -1,0 +1,2 @@
+ALTER TABLE cart_item
+    ADD COLUMN discount BIGINT NOT NULL DEFAULT 0
