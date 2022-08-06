@@ -3,8 +3,10 @@ package api
 import (
 	"basket-api/internal/persistence"
 	"basket-api/internal/route"
+	"basket-api/internal/service"
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/spf13/viper"
 )
@@ -24,6 +26,8 @@ func New() (*Server, error) {
 
 }
 
+var baseValidator *validator.Validate
+
 func (s *Server) setupRouter() error {
 	//gin.Default returns an Engine instance with the Logger and Recovery middleware already attached.
 	router := gin.Default()
@@ -34,6 +38,8 @@ func (s *Server) setupRouter() error {
 		return err
 	}
 
+	baseValidator = validator.New()
+
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "hello world",
@@ -43,6 +49,8 @@ func (s *Server) setupRouter() error {
 	basketApiGroup := router.Group("/api")
 	{
 		route.AddProductRoutes(basketApiGroup, persistence.NewProductDAOPostgres(dbPool))
+		route.AddCartRoutes(basketApiGroup,
+			service.NewCartServiceImp(persistence.NewCartDAOPostgres(dbPool), persistence.NewCartItemDAOPostgres(dbPool), baseValidator))
 	}
 
 	s.router = router
