@@ -18,12 +18,12 @@ func AddProductRoutes(r *gin.RouterGroup, productDAO persistence.ProductDAO) *gi
 }
 
 func listProducts(productDAO persistence.ProductDAO) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := c.Request.Context()
+	return func(context *gin.Context) {
+		ctx := context.Request.Context()
 
 		products, err := productDAO.ListProducts(ctx)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, err.Error())
+			context.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -32,7 +32,7 @@ func listProducts(productDAO persistence.ProductDAO) gin.HandlerFunc {
 			productsResponse = append(productsResponse, createProductResponse(p))
 		}
 
-		c.JSON(http.StatusOK, response.ProductsResponse{Products: productsResponse})
+		context.JSON(http.StatusOK, response.ProductsResponse{Products: productsResponse})
 	}
 }
 
