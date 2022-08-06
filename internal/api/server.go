@@ -53,6 +53,7 @@ func (s *Server) setupRouter() error {
 			service.NewCartServiceImp(
 				persistence.NewCartDAOPostgres(dbPool),
 				persistence.NewCartItemDAOPostgres(dbPool),
+				persistence.NewProductDAOPostgres(dbPool),
 				baseValidator))
 	}
 

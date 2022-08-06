@@ -11,7 +11,7 @@ import (
 
 type CartItemDAO interface {
 	GetCartItemsByCartID(ctx context.Context, cartID int) ([]model.CartItem, error)
-	UpsertCartItem(ctx context.Context, cartID int, productID int, cartPrice int64) error
+	UpsertCartItem(ctx context.Context, cartID int, productID int, price int64) error
 }
 
 type CartItemDAOPostgres struct {
@@ -46,22 +46,17 @@ func (c CartItemDAOPostgres) UpsertCartItem(ctx context.Context, cartID int, pro
 	resErr := c.dbPool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		queries := db.New(tx)
 
-		product, err := queries.GetProductByID(ctx, int64(productID))
-		if err != nil {
-			return errors.Wrap(err, "unable to find product")
-		}
-
 		upsertParams := db.UpsertCartItemParams{
 			Quantity:  1,
 			CartID:    int64(cartID),
 			ProductID: int64(productID),
 		}
-		err = queries.UpsertCartItem(ctx, upsertParams)
+		err := queries.UpsertCartItem(ctx, upsertParams)
 		if err != nil {
 			return errors.Wrap(err, "unable to upsert cart item")
 		}
 		updateCartParams := db.UpdateCartParams{
-			Price:    product.Price + price,
+			Price:    price,
 			Vat:      0,
 			Discount: 0,
 			Status:   "saved",

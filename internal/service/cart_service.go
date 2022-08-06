@@ -17,6 +17,7 @@ type CartService interface {
 type CartServiceImp struct {
 	cartDAO     persistence.CartDAO
 	cartItemDAO persistence.CartItemDAO
+	productDAO  persistence.ProductDAO
 	Validator   *validator.Validate
 }
 
@@ -25,10 +26,12 @@ var _ CartService = (*CartServiceImp)(nil)
 func NewCartServiceImp(
 	cartDAO persistence.CartDAO,
 	cartItemDAO persistence.CartItemDAOPostgres,
+	productDAO persistence.ProductDAO,
 	validator *validator.Validate) CartServiceImp {
 	return CartServiceImp{
 		cartDAO:     cartDAO,
 		cartItemDAO: cartItemDAO,
+		productDAO:  productDAO,
 		Validator:   validator,
 	}
 }
@@ -51,7 +54,13 @@ func (c CartServiceImp) AddItemToCart(ctx context.Context, request request.CartI
 	if err != nil {
 		return err
 	}
-	err = c.cartItemDAO.UpsertCartItem(ctx, int(customerCart.ID), request.ProductID, customerCart.TotalPrice)
+
+	product, err := c.productDAO.GetProductByID(ctx, request.ProductID)
+	if err != nil {
+		return err
+	}
+	updatedCartTotalPrice := customerCart.TotalPrice + product.Price
+	err = c.cartItemDAO.UpsertCartItem(ctx, int(customerCart.ID), request.ProductID, updatedCartTotalPrice)
 	if err != nil {
 		return err
 	}
