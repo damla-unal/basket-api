@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS cart_item_cart_id_product_id_idx on cart_item (cart_id, product_id);
