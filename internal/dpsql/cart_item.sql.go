@@ -78,3 +78,22 @@ func (q *Queries) GetCartItemsByCartID(ctx context.Context, cartID int64) ([]Get
 	}
 	return items, nil
 }
+
+const upsertCartItem = `-- name: UpsertCartItem :exec
+INSERT INTO cart_item (quantity, cart_id, product_id)
+VALUES ($1, $2, $3)
+ON CONFLICT (cart_id, product_id)
+    DO UPDATE
+    SET quantity = cart_item.quantity + excluded.quantity
+`
+
+type UpsertCartItemParams struct {
+	Quantity  int64 `json:"quantity"`
+	CartID    int64 `json:"cart_id"`
+	ProductID int64 `json:"product_id"`
+}
+
+func (q *Queries) UpsertCartItem(ctx context.Context, arg UpsertCartItemParams) error {
+	_, err := q.db.Exec(ctx, upsertCartItem, arg.Quantity, arg.CartID, arg.ProductID)
+	return err
+}
