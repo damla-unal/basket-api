@@ -90,3 +90,31 @@ func (q *Queries) GetSavedCartByCustomerID(ctx context.Context, id int64) (GetSa
 	)
 	return i, err
 }
+
+const updateCart = `-- name: UpdateCart :exec
+UPDATE cart
+SET total_price = $1,
+    vat         = $2,
+    discount    = $3,
+    status      = $4
+WHERE id = $5
+`
+
+type UpdateCartParams struct {
+	Price    int64      `json:"price"`
+	Vat      int64      `json:"vat"`
+	Discount int64      `json:"discount"`
+	Status   CartStatus `json:"status"`
+	ID       int64      `json:"id"`
+}
+
+func (q *Queries) UpdateCart(ctx context.Context, arg UpdateCartParams) error {
+	_, err := q.db.Exec(ctx, updateCart,
+		arg.Price,
+		arg.Vat,
+		arg.Discount,
+		arg.Status,
+		arg.ID,
+	)
+	return err
+}

@@ -19,3 +19,10 @@ FROM cart
 WHERE c.id = $1
   and cart.status = 'saved';
 
+-- name: UpdateCart :exec
+UPDATE cart
+SET total_price = sqlc.arg(price),
+    vat         = sqlc.arg(vat),
+    discount    = sqlc.arg(discount),
+    status      = sqlc.arg(status)
+WHERE id = sqlc.arg(id);
