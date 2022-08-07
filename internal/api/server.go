@@ -32,7 +32,9 @@ func (s *Server) setupRouter() error {
 	//gin.Default returns an Engine instance with the Logger and Recovery middleware already attached.
 	router := gin.Default()
 
+	// get the database connection URL
 	postgresUrl := viper.GetString("postgres.url")
+	// this returns connection pool
 	dbPool, err := pgxpool.Connect(context.Background(), postgresUrl)
 	if err != nil {
 		return err
@@ -55,6 +57,7 @@ func (s *Server) setupRouter() error {
 				persistence.NewCartItemDAOPostgres(dbPool),
 				persistence.NewProductDAOPostgres(dbPool),
 				baseValidator))
+		route.AddOrderRoutes(basketApiGroup, service.NewOrderServiceImp(persistence.NewCartDAOPostgres(dbPool), persistence.NewOrderDAOPostgres(dbPool)))
 	}
 
 	s.router = router
