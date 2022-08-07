@@ -10,6 +10,17 @@ import (
 	"database/sql"
 )
 
+const deleteAllCartItem = `-- name: DeleteAllCartItem :exec
+DELETE
+FROM cart_item
+WHERE cart_id = $1
+`
+
+func (q *Queries) DeleteAllCartItem(ctx context.Context, cartID int64) error {
+	_, err := q.db.Exec(ctx, deleteAllCartItem, cartID)
+	return err
+}
+
 const deleteCartItem = `-- name: DeleteCartItem :exec
 DELETE
 FROM cart_item

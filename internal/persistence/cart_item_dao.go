@@ -63,7 +63,6 @@ func (c CartItemDAOPostgres) UpsertCartItem(ctx context.Context, cartID int, pro
 			Price:    int64(price),
 			Vat:      0,
 			Discount: 0,
-			Status:   "saved",
 			ID:       int64(cartID),
 		}
 		err = queries.UpdateCart(ctx, updateCartParams)
@@ -105,7 +104,6 @@ func (c CartItemDAOPostgres) UpdateCartItem(ctx context.Context, ID int, quantit
 			Price:    int64(cartPrice),
 			Vat:      0,
 			Discount: 0,
-			Status:   "saved",
 			ID:       int64(cartID),
 		}
 		err = queries.UpdateCart(ctx, updateCartParams)
@@ -129,7 +127,6 @@ func (c CartItemDAOPostgres) DeleteCartItem(ctx context.Context, ID int, cartID 
 			Price:    int64(cartPrice),
 			Vat:      0,
 			Discount: 0,
-			Status:   "saved",
 			ID:       int64(cartID),
 		}
 		err = queries.UpdateCart(ctx, updateCartParams)

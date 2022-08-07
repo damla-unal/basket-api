@@ -30,3 +30,8 @@ WHERE id = $1;
 SELECT *
 FROM cart_item
 WHERE id = $1;
+
+-- name: DeleteAllCartItem :exec
+DELETE
+FROM cart_item
+WHERE cart_id = $1;

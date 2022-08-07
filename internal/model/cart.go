@@ -11,7 +11,6 @@ type Cart struct {
 	Discount     int        `json:"discount"`
 	CustomerID   int        `json:"customer_id"`
 	CustomerName string     `json:"customer_name"`
-	Status       CartStatus `json:"status"`
 	Items        []CartItem `json:"cart_items"`
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`

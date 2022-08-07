@@ -27,7 +27,7 @@ func (c CartDAOPostgres) GetCartByCustomerID(ctx context.Context, customerID int
 
 	var customerCart model.Cart
 	resErr := c.dbPool.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
-		cart, err := db.New(conn).GetSavedCartByCustomerID(ctx, int64(customerID))
+		cart, err := db.New(conn).GetCartByCustomerID(ctx, int64(customerID))
 		if err != nil {
 			return errors.Wrap(err, "unable to get cart of customer")
 		}
@@ -41,7 +41,7 @@ func (c CartDAOPostgres) GetCartByCustomerID(ctx context.Context, customerID int
 func (c CartDAOPostgres) GetCartByID(ctx context.Context, ID int) (model.Cart, error) {
 	var foundCart model.Cart
 	resErr := c.dbPool.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
-		cart, err := db.New(conn).GetSavedCartByCustomerID(ctx, int64(ID))
+		cart, err := db.New(conn).GetCartByCustomerID(ctx, int64(ID))
 		if err != nil {
 			return errors.Wrap(err, "unable to get cart by ID")
 		}
@@ -52,7 +52,7 @@ func (c CartDAOPostgres) GetCartByID(ctx context.Context, ID int) (model.Cart, e
 	return foundCart, resErr
 }
 
-func createCartModelFromDpSQLModel(dbCart db.GetSavedCartByCustomerIDRow) model.Cart {
+func createCartModelFromDpSQLModel(dbCart db.GetCartByCustomerIDRow) model.Cart {
 	return model.Cart{
 		ID:           int(dbCart.ID),
 		TotalPrice:   int(dbCart.TotalPrice),
@@ -60,7 +60,6 @@ func createCartModelFromDpSQLModel(dbCart db.GetSavedCartByCustomerIDRow) model.
 		Discount:     int(dbCart.Discount),
 		CustomerID:   int(dbCart.CustomerID),
 		CustomerName: dbCart.CustomerName.String,
-		Status:       model.CartStatus(dbCart.Status),
 		CreatedAt:    dbCart.CreatedAt.Time,
 		UpdatedAt:    dbCart.UpdatedAt.Time,
 	}
