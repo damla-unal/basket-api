@@ -23,7 +23,7 @@ func listProducts(productDAO persistence.ProductDAO) gin.HandlerFunc {
 
 		products, err := productDAO.ListProducts(ctx)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, err.Error())
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{Error: err.Error()})
 			return
 		}
 

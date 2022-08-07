@@ -21,13 +21,13 @@ func createOrder(orderService service.OrderService) gin.HandlerFunc {
 		ctx := context.Request.Context()
 		var orderRequest request.OrderRequest
 		if err := context.ShouldBindJSON(&orderRequest); err != nil {
-			context.JSON(http.StatusBadRequest, err.Error())
+			context.JSON(http.StatusBadRequest, response.FailedResponse{Error: err.Error()})
 			return
 		}
 
 		err := orderService.CreateOrder(ctx, orderRequest)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, err.Error())
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{Error: err.Error()})
 			return
 		}
 

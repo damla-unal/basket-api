@@ -26,13 +26,13 @@ func showCustomerCart(cartService service.CartService) gin.HandlerFunc {
 		ctx := context.Request.Context()
 		customerID, err := http_helpers.GetPositiveIntegerQueryParameter(context, "customer-id")
 		if err != nil {
-			context.JSON(http.StatusBadRequest, err.Error())
+			context.JSON(http.StatusBadRequest, response.FailedResponse{Error: err.Error()})
 			return
 		}
 
 		customerCart, err := cartService.ShowCustomerCart(ctx, *customerID)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, err.Error())
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{Error: err.Error()})
 			return
 		}
 
@@ -46,13 +46,13 @@ func addItemToCart(cartService service.CartService) gin.HandlerFunc {
 		ctx := context.Request.Context()
 		var cartItemRequest request.CartItemRequest
 		if err := context.ShouldBindJSON(&cartItemRequest); err != nil {
-			context.JSON(http.StatusBadRequest, err.Error())
+			context.JSON(http.StatusBadRequest, response.FailedResponse{Error: err.Error()})
 			return
 		}
 
 		err := cartService.AddItemToCart(ctx, cartItemRequest)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, err.Error())
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{Error: err.Error()})
 			return
 		}
 
@@ -67,13 +67,13 @@ func deleteItemFromCart(cartService service.CartService) gin.HandlerFunc {
 
 		itemID, err := http_helpers.GetRequiredPathVariable(context, "id")
 		if err != nil {
-			context.JSON(http.StatusBadRequest, err.Error())
+			context.JSON(http.StatusBadRequest, response.FailedResponse{Error: err.Error()})
 			return
 		}
 
 		err = cartService.DeleteItemFromCart(ctx, *itemID)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, err.Error())
+			context.JSON(http.StatusInternalServerError, response.FailedResponse{Error: err.Error()})
 			return
 		}
 
