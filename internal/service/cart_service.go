@@ -4,6 +4,7 @@ import (
 	"basket-api/internal/model"
 	"basket-api/internal/model/request"
 	"basket-api/internal/persistence"
+	"basket-api/internal/util/discount"
 	"context"
 )
 
@@ -24,7 +25,7 @@ var _ CartService = (*CartServiceImp)(nil)
 
 func NewCartServiceImp(
 	cartDAO persistence.CartDAO,
-	cartItemDAO persistence.CartItemDAOPostgres,
+	cartItemDAO persistence.CartItemDAO,
 	productDAO persistence.ProductDAO,
 ) CartServiceImp {
 	return CartServiceImp{
@@ -71,8 +72,12 @@ func (c CartServiceImp) AddItemToCart(ctx context.Context, request request.CartI
 	if err != nil {
 		return err
 	}
-	discountRate := calculateDiscountForTheSameProducts(request.ProductID, customerCart, "add")
-	afterDiscount := calculatePriceAfterDiscount(discountRate, int(product.Price))
+
+	discountRate := discount.CalculateDiscountForTheSameProducts(request.ProductID, customerCart, "add")
+	afterDiscount, err := discount.CalculatePriceAfterDiscount(discountRate, int(product.Price))
+	if err != nil {
+		return err
+	}
 
 	updatedCartTotalPrice := customerCart.TotalPrice + afterDiscount
 	cartItemToUpsert := model.CartItem{
@@ -102,8 +107,11 @@ func (c CartServiceImp) DeleteItemFromCart(ctx context.Context, itemID int) erro
 
 	// if the quantity greater than one, reduce by one (decreased quantity)
 	if foundCartItem.Quantity > 1 {
-		updatedDiscount := calculateDiscountForTheSameProducts(foundCartItem.ProductID, cart, "remove")
-		removedPrice := calculatePriceAfterDiscount(foundCartItem.Discount, foundCartItem.QTYPrice)
+		updatedDiscount := discount.CalculateDiscountForTheSameProducts(foundCartItem.ProductID, cart, "remove")
+		removedPrice, err := discount.CalculatePriceAfterDiscount(foundCartItem.Discount, foundCartItem.QTYPrice)
+		if err != nil {
+			return err
+		}
 		afterDeleteItemPrice := foundCartItem.Price - removedPrice
 		afterDeleteCartPrice := cart.TotalPrice - removedPrice
 
@@ -115,7 +123,7 @@ func (c CartServiceImp) DeleteItemFromCart(ctx context.Context, itemID int) erro
 			Discount: updatedDiscount,
 			Price:    afterDeleteItemPrice,
 		}
-		err := c.cartItemDAO.UpdateCartItem(
+		err = c.cartItemDAO.UpdateCartItem(
 			ctx,
 			updatedCartItem,
 			afterDeleteCartPrice,
@@ -131,34 +139,4 @@ func (c CartServiceImp) DeleteItemFromCart(ctx context.Context, itemID int) erro
 		}
 	}
 	return nil
-}
-
-//checkDiscountForTheSameProducts checks if there are more than 3 items of the same product,
-// then fourth and subsequent ones would have %8 off.
-func calculateDiscountForTheSameProducts(productID int, cart model.Cart, operationType string) int {
-
-	for _, item := range cart.Items {
-		if item.ProductID == productID {
-			switch operationType {
-			case "add":
-				if item.Quantity >= 3 {
-					return 8
-				}
-			case "remove":
-				if item.Quantity <= 4 {
-					return 0
-				} else {
-					return 8
-				}
-			default:
-				return 0
-			}
-		}
-	}
-	return 0
-}
-
-func calculatePriceAfterDiscount(discountRate int, price int) int {
-	afterDiscount := price - (price * discountRate / 100)
-	return afterDiscount
 }
