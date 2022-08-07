@@ -96,7 +96,8 @@ UPDATE cart
 SET total_price = $1,
     vat         = $2,
     discount    = $3,
-    status      = $4
+    status      = $4,
+    updated_at  = now()
 WHERE id = $5
 `
 

@@ -45,6 +45,7 @@ type CartItem struct {
 	CartID    int64 `json:"cart_id"`
 	ProductID int64 `json:"product_id"`
 	Discount  int64 `json:"discount"`
+	Price     int64 `json:"price"`
 }
 
 type Customer struct {

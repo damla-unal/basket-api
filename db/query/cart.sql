@@ -24,5 +24,6 @@ UPDATE cart
 SET total_price = sqlc.arg(price),
     vat         = sqlc.arg(vat),
     discount    = sqlc.arg(discount),
-    status      = sqlc.arg(status)
+    status      = sqlc.arg(status),
+    updated_at  = now()
 WHERE id = sqlc.arg(id);

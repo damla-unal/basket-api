@@ -5,11 +5,11 @@ import (
 )
 
 type Cart struct {
-	ID           int64      `json:"id"`
-	TotalPrice   int64      `json:"total_price"`
-	Vat          int64      `json:"vat"`
-	Discount     int64      `json:"discount"`
-	CustomerID   int64      `json:"customer_id"`
+	ID           int        `json:"id"`
+	TotalPrice   int        `json:"total_price"`
+	Vat          int        `json:"vat"`
+	Discount     int        `json:"discount"`
+	CustomerID   int        `json:"customer_id"`
 	CustomerName string     `json:"customer_name"`
 	Status       CartStatus `json:"status"`
 	Items        []CartItem `json:"cart_items"`

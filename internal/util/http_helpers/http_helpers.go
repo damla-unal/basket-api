@@ -30,3 +30,16 @@ func GetRequiredQueryParameter(c *gin.Context, key string) (string, error) {
 	}
 	return value, nil
 }
+
+func GetRequiredPathVariable(c *gin.Context, key string) (*int, error) {
+	value := c.Params.ByName(key)
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil, errors.New(key + " is required and missing from the path variables")
+	}
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		return nil, err
+	}
+	return &intValue, nil
+}

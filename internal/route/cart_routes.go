@@ -9,11 +9,14 @@ import (
 	"net/http"
 )
 
+const ItemsEndpoint = "/items"
+
 func AddCartRoutes(r *gin.RouterGroup, cartService service.CartService) *gin.RouterGroup {
 	cartRoutes := r.Group("/cart")
 	{
 		cartRoutes.GET("", showCustomerCart(cartService))
-		cartRoutes.POST("/items", addItemToCart(cartService))
+		cartRoutes.POST(ItemsEndpoint, addItemToCart(cartService))
+		cartRoutes.DELETE(ItemsEndpoint+"/:id", deleteItemFromCart(cartService))
 	}
 	return cartRoutes
 }
@@ -56,5 +59,24 @@ func addItemToCart(cartService service.CartService) gin.HandlerFunc {
 		context.JSON(http.StatusOK, response.SuccessfulResponse{Result: true})
 
 	}
+}
 
+func deleteItemFromCart(cartService service.CartService) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		ctx := context.Request.Context()
+
+		itemID, err := http_helpers.GetRequiredPathVariable(context, "id")
+		if err != nil {
+			context.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+
+		err = cartService.DeleteItemFromCart(ctx, *itemID)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		context.JSON(http.StatusOK, response.SuccessfulResponse{Result: true})
+	}
 }

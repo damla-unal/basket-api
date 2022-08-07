@@ -11,6 +11,7 @@ import (
 type CartService interface {
 	ShowCustomerCart(ctx context.Context, customerID int) (model.Cart, error)
 	AddItemToCart(ctx context.Context, request request.CartItemRequest) error
+	DeleteItemFromCart(ctx context.Context, itemID int) error
 	//ValidateCustomerCartRequest(request request.CustomerCartRequest) error
 }
 
@@ -41,7 +42,7 @@ func (c CartServiceImp) ShowCustomerCart(ctx context.Context, customerID int) (m
 	if err != nil {
 		return model.Cart{}, err
 	}
-	cartItems, err := c.cartItemDAO.GetCartItemsByCartID(ctx, int(customerCart.ID))
+	cartItems, err := c.cartItemDAO.GetCartItemsByCartID(ctx, customerCart.ID)
 	if err != nil {
 		return model.Cart{}, err
 	}
@@ -59,10 +60,48 @@ func (c CartServiceImp) AddItemToCart(ctx context.Context, request request.CartI
 	if err != nil {
 		return err
 	}
-	updatedCartTotalPrice := customerCart.TotalPrice + product.Price
-	err = c.cartItemDAO.UpsertCartItem(ctx, int(customerCart.ID), request.ProductID, updatedCartTotalPrice)
+	updatedCartTotalPrice := customerCart.TotalPrice + int(product.Price)
+	err = c.cartItemDAO.UpsertCartItem(ctx, customerCart.ID, request.ProductID, updatedCartTotalPrice, int(product.Price))
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (c CartServiceImp) DeleteItemFromCart(ctx context.Context, itemID int) error {
+	foundCartItem, err := c.cartItemDAO.GetCartItemByID(ctx, itemID)
+	if err != nil {
+		return err
+	}
+
+	cart, err := c.cartDAO.GetCartByID(ctx, foundCartItem.CartID)
+	if err != nil {
+		return err
+	}
+
+	priceOfQty := foundCartItem.Price / foundCartItem.Quantity
+	updatedCartTotalPrice := cart.TotalPrice - priceOfQty
+
+	// if the quantity greater than one, reduce by one (decreased quantity)
+	if foundCartItem.Quantity > 1 {
+		updatedQuantity := foundCartItem.Quantity - 1
+		err := c.cartItemDAO.UpdateCartItem(
+			ctx,
+			itemID,
+			updatedQuantity,
+			foundCartItem.Discount,
+			foundCartItem.Price-priceOfQty,
+			updatedCartTotalPrice,
+			foundCartItem.CartID,
+		)
+		if err != nil {
+			return err
+		}
+	} else { // if the quantity is equal to 1, remove this cart item
+		err = c.cartItemDAO.DeleteCartItem(ctx, itemID, foundCartItem.CartID, updatedCartTotalPrice)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
