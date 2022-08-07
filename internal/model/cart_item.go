@@ -1,6 +1,5 @@
 package model
 
-// CartItem TODO separate it as cartItem model and cartItemWithProductDetail model
 type CartItem struct {
 	ID           int    `json:"id"`
 	Quantity     int    `json:"quantity"`
@@ -9,4 +8,6 @@ type CartItem struct {
 	Price        int    `json:"price"`
 	ProductID    int    `json:"product_id"`
 	ProductTitle string `json:"product_title"`
+	ProductVat   int    `json:"product_vat"`
+	QTYPrice     int    `json:"qty_price"`
 }

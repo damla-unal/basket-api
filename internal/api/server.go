@@ -6,7 +6,6 @@ import (
 	"basket-api/internal/service"
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/spf13/viper"
 )
@@ -26,8 +25,6 @@ func New() (*Server, error) {
 
 }
 
-var baseValidator *validator.Validate
-
 func (s *Server) setupRouter() error {
 	//gin.Default returns an Engine instance with the Logger and Recovery middleware already attached.
 	router := gin.Default()
@@ -39,8 +36,6 @@ func (s *Server) setupRouter() error {
 	if err != nil {
 		return err
 	}
-
-	baseValidator = validator.New()
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -55,9 +50,10 @@ func (s *Server) setupRouter() error {
 			service.NewCartServiceImp(
 				persistence.NewCartDAOPostgres(dbPool),
 				persistence.NewCartItemDAOPostgres(dbPool),
-				persistence.NewProductDAOPostgres(dbPool),
-				baseValidator))
-		route.AddOrderRoutes(basketApiGroup, service.NewOrderServiceImp(persistence.NewCartDAOPostgres(dbPool), persistence.NewOrderDAOPostgres(dbPool)))
+				persistence.NewProductDAOPostgres(dbPool)))
+		route.AddOrderRoutes(basketApiGroup, service.NewOrderServiceImp(service.NewCartServiceImp(persistence.NewCartDAOPostgres(dbPool),
+			persistence.NewCartItemDAOPostgres(dbPool),
+			persistence.NewProductDAOPostgres(dbPool)), persistence.NewOrderDAOPostgres(dbPool)))
 	}
 
 	s.router = router

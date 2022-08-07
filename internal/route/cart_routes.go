@@ -30,7 +30,7 @@ func showCustomerCart(cartService service.CartService) gin.HandlerFunc {
 			return
 		}
 
-		customerCart, err := cartService.ShowCustomerCart(ctx, *customerID)
+		customerCart, err := cartService.GetCustomerCart(ctx, *customerID)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, response.FailedResponse{Error: err.Error()})
 			return

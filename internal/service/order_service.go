@@ -12,25 +12,25 @@ type OrderService interface {
 }
 
 type OrderServiceImp struct {
-	cartDAO  persistence.CartDAO
-	orderDAO persistence.OrderDAO
+	cartService CartService
+	orderDAO    persistence.OrderDAO
 }
 
 var _ OrderService = (*OrderServiceImp)(nil)
 
 func NewOrderServiceImp(
-	cartDAO persistence.CartDAO,
+	cartService CartService,
 	orderDAO persistence.OrderDAO,
 ) OrderServiceImp {
 	return OrderServiceImp{
-		cartDAO:  cartDAO,
-		orderDAO: orderDAO,
+		cartService: cartService,
+		orderDAO:    orderDAO,
 	}
 }
 
 func (o OrderServiceImp) CreateOrder(ctx context.Context, request request.OrderRequest) error {
 	//get customers' cart info to create an order from cart items
-	cart, err := o.cartDAO.GetCartByCustomerID(ctx, request.CustomerID)
+	cart, err := o.cartService.GetCustomerCart(ctx, request.CustomerID)
 	if err != nil {
 		return err
 	}

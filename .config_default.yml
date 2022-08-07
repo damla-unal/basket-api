@@ -2,3 +2,6 @@ postgres:
   url: postgresql://localhost:5432/basket_api?sslmode=disable
 http_server:
   port: 8080
+
+threshold_for_discount:
+  amount: 500

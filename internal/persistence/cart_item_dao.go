@@ -11,10 +11,10 @@ import (
 
 type CartItemDAO interface {
 	GetCartItemsByCartID(ctx context.Context, cartID int) ([]model.CartItem, error)
-	GetCartItemByID(ctx context.Context, ID int) (model.CartItem, error)
-	UpsertCartItem(ctx context.Context, cartID int, productID int, price int, productPrice int) error
-	UpdateCartItem(ctx context.Context, ID int, quantity int, discount int, updatedItemPrice int, cartPrice int, cartID int) error
-	DeleteCartItem(ctx context.Context, ID int, cartID int, cartPrice int) error
+	GetCartItemByID(ctx context.Context, id int) (model.CartItem, error)
+	UpsertCartItem(ctx context.Context, cartItemToUpsert model.CartItem, updatedCartPrice int) error
+	UpdateCartItem(ctx context.Context, cartItemToUpdate model.CartItem, updatedCartPrice int) error
+	DeleteCartItem(ctx context.Context, id int, cartID int, cartPrice int) error
 }
 
 type CartItemDAOPostgres struct {
@@ -44,26 +44,27 @@ func (c CartItemDAOPostgres) GetCartItemsByCartID(ctx context.Context, cartID in
 	return cartItems, resErr
 }
 
-func (c CartItemDAOPostgres) UpsertCartItem(ctx context.Context, cartID int, productID int, price int, productPrice int) error {
+func (c CartItemDAOPostgres) UpsertCartItem(ctx context.Context, cartItemToUpsert model.CartItem, updatedCartPrice int) error {
 
 	resErr := c.dbPool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		queries := db.New(tx)
 
 		upsertParams := db.UpsertCartItemParams{
-			Quantity:  1,
-			CartID:    int64(cartID),
-			Price:     int64(productPrice),
-			ProductID: int64(productID),
+			Quantity:  int64(cartItemToUpsert.Quantity),
+			CartID:    int64(cartItemToUpsert.CartID),
+			Price:     int64(cartItemToUpsert.Price),
+			Discount:  int64(cartItemToUpsert.Discount),
+			ProductID: int64(cartItemToUpsert.ProductID),
 		}
 		err := queries.UpsertCartItem(ctx, upsertParams)
 		if err != nil {
 			return errors.Wrap(err, "unable to upsert cart item")
 		}
 		updateCartParams := db.UpdateCartParams{
-			Price:    int64(price),
+			Price:    int64(updatedCartPrice),
 			Vat:      0,
 			Discount: 0,
-			ID:       int64(cartID),
+			ID:       int64(cartItemToUpsert.CartID),
 		}
 		err = queries.UpdateCart(ctx, updateCartParams)
 		if err != nil {
@@ -74,10 +75,10 @@ func (c CartItemDAOPostgres) UpsertCartItem(ctx context.Context, cartID int, pro
 	return resErr
 }
 
-func (c CartItemDAOPostgres) GetCartItemByID(ctx context.Context, ID int) (model.CartItem, error) {
+func (c CartItemDAOPostgres) GetCartItemByID(ctx context.Context, id int) (model.CartItem, error) {
 	var foundCartItem model.CartItem
 	resErr := c.dbPool.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
-		dbCartItem, err := db.New(conn).GetCartItemByID(ctx, int64(ID))
+		dbCartItem, err := db.New(conn).GetCartItemDetailsByID(ctx, int64(id))
 		if err != nil {
 			return errors.Wrap(err, "unable to get cart item by id")
 		}
@@ -87,24 +88,24 @@ func (c CartItemDAOPostgres) GetCartItemByID(ctx context.Context, ID int) (model
 	return foundCartItem, resErr
 }
 
-func (c CartItemDAOPostgres) UpdateCartItem(ctx context.Context, ID int, quantity int, discount int, updatedItemPrice int, cartPrice int, cartID int) error {
+func (c CartItemDAOPostgres) UpdateCartItem(ctx context.Context, cartItemToUpdate model.CartItem, updatedCartPrice int) error {
 	resErr := c.dbPool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		queries := db.New(tx)
 		err := queries.UpdateCartItem(ctx, db.UpdateCartItemParams{
-			Quantity: int64(quantity),
-			Discount: int64(discount),
-			Price:    int64(updatedItemPrice),
-			ID:       int64(ID),
+			Quantity: int64(cartItemToUpdate.Quantity),
+			Discount: int64(cartItemToUpdate.Discount),
+			Price:    int64(cartItemToUpdate.Price),
+			ID:       int64(cartItemToUpdate.ID),
 		})
 		if err != nil {
 			return errors.Wrap(err, "unable to update cart item")
 		}
 
 		updateCartParams := db.UpdateCartParams{
-			Price:    int64(cartPrice),
+			Price:    int64(updatedCartPrice),
 			Vat:      0,
 			Discount: 0,
-			ID:       int64(cartID),
+			ID:       int64(cartItemToUpdate.CartID),
 		}
 		err = queries.UpdateCart(ctx, updateCartParams)
 		if err != nil {
@@ -115,10 +116,10 @@ func (c CartItemDAOPostgres) UpdateCartItem(ctx context.Context, ID int, quantit
 	return resErr
 }
 
-func (c CartItemDAOPostgres) DeleteCartItem(ctx context.Context, ID int, cartID int, cartPrice int) error {
+func (c CartItemDAOPostgres) DeleteCartItem(ctx context.Context, id int, cartID int, cartPrice int) error {
 	resErr := c.dbPool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		queries := db.New(tx)
-		err := queries.DeleteCartItem(ctx, int64(ID))
+		err := queries.DeleteCartItem(ctx, int64(id))
 		if err != nil {
 			return errors.Wrap(err, "unable to delete cart item")
 		}
@@ -147,15 +148,20 @@ func createCartItemModelFromGetCartItemsByCartIDRow(dbCartItem db.GetCartItemsBy
 		Price:        int(dbCartItem.Price),
 		ProductID:    int(dbCartItem.ProductID),
 		ProductTitle: dbCartItem.ProductTitle.String,
+		ProductVat:   int(dbCartItem.ProductVat.Int64),
+		QTYPrice:     int(dbCartItem.QtyPrice.Int64),
 	}
 }
 
-func createCartItemModelFromDbModel(item db.CartItem) model.CartItem {
+func createCartItemModelFromDbModel(item db.GetCartItemDetailsByIDRow) model.CartItem {
 	return model.CartItem{
-		Quantity:  int(item.Quantity),
-		CartID:    int(item.CartID),
-		Discount:  int(item.Discount),
-		Price:     int(item.Price),
-		ProductID: int(item.ProductID),
+		Quantity:     int(item.Quantity),
+		CartID:       int(item.CartID),
+		Discount:     int(item.Discount),
+		Price:        int(item.Price),
+		ProductID:    int(item.ProductID),
+		ProductTitle: item.ProdcutTitle,
+		ProductVat:   int(item.ProductVat),
+		QTYPrice:     int(item.QtyPrice.Int64),
 	}
 }
