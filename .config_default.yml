@@ -4,4 +4,5 @@ http_server:
   port: 8080
 
 threshold_for_discount:
-  amount: 500
+  #this amount is of cent type. (10000 = $100)
+  amount: 10000

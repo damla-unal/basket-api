@@ -44,16 +44,16 @@ func (s *Server) setupRouter() error {
 	})
 
 	basketApiGroup := router.Group("/api")
+	cartDAO := persistence.NewCartDAOPostgres(dbPool)
+	cartItemDAO := persistence.NewCartItemDAOPostgres(dbPool)
+	productDAO := persistence.NewProductDAOPostgres(dbPool)
+	orderDAO := persistence.NewOrderDAOPostgres(dbPool)
+	cartService := service.NewCartServiceImp(cartDAO, cartItemDAO, productDAO)
+	orderService := service.NewOrderServiceImp(cartService, orderDAO)
 	{
-		route.AddProductRoutes(basketApiGroup, persistence.NewProductDAOPostgres(dbPool))
-		route.AddCartRoutes(basketApiGroup,
-			service.NewCartServiceImp(
-				persistence.NewCartDAOPostgres(dbPool),
-				persistence.NewCartItemDAOPostgres(dbPool),
-				persistence.NewProductDAOPostgres(dbPool)))
-		route.AddOrderRoutes(basketApiGroup, service.NewOrderServiceImp(service.NewCartServiceImp(persistence.NewCartDAOPostgres(dbPool),
-			persistence.NewCartItemDAOPostgres(dbPool),
-			persistence.NewProductDAOPostgres(dbPool)), persistence.NewOrderDAOPostgres(dbPool)))
+		route.AddProductRoutes(basketApiGroup, productDAO)
+		route.AddCartRoutes(basketApiGroup, cartService)
+		route.AddOrderRoutes(basketApiGroup, orderService)
 	}
 
 	s.router = router

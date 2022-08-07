@@ -11,6 +11,7 @@ import (
 
 type OrderDAO interface {
 	CreateOrder(ctx context.Context, cartToOrder model.Cart) error
+	GetOrdersByCustomerID(ctx context.Context, customerID int) ([]model.Order, error)
 }
 
 type OrderDAOPostgres struct {
@@ -57,4 +58,28 @@ func (o OrderDAOPostgres) CreateOrder(ctx context.Context, cartToOrder model.Car
 		return nil
 	})
 	return resErr
+}
+
+func (o OrderDAOPostgres) GetOrdersByCustomerID(ctx context.Context, customerID int) ([]model.Order, error) {
+	orders := make([]model.Order, 0)
+	resErr := o.dbPool.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
+		dbOrders, err := db.New(conn).GetOrdersByCustomerID(ctx, int64(customerID))
+		if err != nil {
+			return errors.Wrap(err, "unable to get orders of customer")
+		}
+		for _, dbOrder := range dbOrders {
+			orders = append(orders, createOrderModelFromDbModel(dbOrder))
+		}
+		return nil
+
+	})
+	return orders, resErr
+}
+
+func createOrderModelFromDbModel(order db.Order) model.Order {
+	return model.Order{
+		CustomerID: int(order.CustomerID),
+		TotalPrice: int(order.TotalPrice),
+	}
+
 }
