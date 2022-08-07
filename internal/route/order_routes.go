@@ -27,7 +27,7 @@ func createOrder(orderService service.OrderService) gin.HandlerFunc {
 
 		err := orderService.CreateOrder(ctx, orderRequest)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, err)
+			context.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}
 

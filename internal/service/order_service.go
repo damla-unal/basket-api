@@ -4,6 +4,7 @@ import (
 	"basket-api/internal/model/request"
 	"basket-api/internal/persistence"
 	"context"
+	"github.com/pkg/errors"
 )
 
 type OrderService interface {
@@ -32,6 +33,10 @@ func (o OrderServiceImp) CreateOrder(ctx context.Context, request request.OrderR
 	cart, err := o.cartDAO.GetCartByCustomerID(ctx, request.CustomerID)
 	if err != nil {
 		return err
+	}
+
+	if len(cart.Items) == 0 {
+		return errors.New("cannot create an order: customers' cart is empty")
 	}
 	//create an order
 	err = o.orderDAO.CreateOrder(ctx, cart)

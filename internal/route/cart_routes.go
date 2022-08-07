@@ -32,7 +32,7 @@ func showCustomerCart(cartService service.CartService) gin.HandlerFunc {
 
 		customerCart, err := cartService.ShowCustomerCart(ctx, *customerID)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, err)
+			context.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -52,7 +52,7 @@ func addItemToCart(cartService service.CartService) gin.HandlerFunc {
 
 		err := cartService.AddItemToCart(ctx, cartItemRequest)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, err)
+			context.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -73,7 +73,7 @@ func deleteItemFromCart(cartService service.CartService) gin.HandlerFunc {
 
 		err = cartService.DeleteItemFromCart(ctx, *itemID)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, err)
+			context.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}
 
