@@ -2,7 +2,7 @@ createdb:
 	createdb basket-api
 
 dropdb:
-	dropdb deneme
+	dropdb basket-api
 
 sqlc:
 	sqlc generate
