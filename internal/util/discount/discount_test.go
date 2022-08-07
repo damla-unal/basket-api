@@ -2,6 +2,7 @@ package discount
 
 import (
 	"basket-api/internal/model"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -75,6 +76,39 @@ func TestCalculateDiscountForTheSameProducts(t *testing.T) {
 
 }
 
+func TestCheckDiscountConditionsForEveryFourthOrder(t *testing.T) {
+	t.Run("It should return false if the number of orders greater than or equal to the given amount is not a multiple of 3 and 3.",
+		func(t *testing.T) {
+			viper.Set("threshold_for_discount.amount", 10000)
+			orders := getOrders()
+			actual := CheckDiscountConditionsForEveryFourthOrder(&orders)
+			require.Equal(t, false, actual)
+		})
+
+	t.Run("It should return true if the number of orders greater than or equal to the given quantity is a multiple of 3 and 3.",
+		func(t *testing.T) {
+			viper.Set("threshold_for_discount.amount", 10000)
+			orders := getOrders()
+			orders = append(orders, model.Order{
+				CustomerID: 1,
+				TotalPrice: 14567,
+			})
+			actual := CheckDiscountConditionsForEveryFourthOrder(&orders)
+			require.Equal(t, true, actual)
+		})
+
+}
+
+func TestCalculateDiscountForEveryFourthOrder(t *testing.T) {
+	t.Run("It should return false if the number of orders greater than or equal to the given amount is not a multiple of 3 and 3.",
+		func(t *testing.T) {
+			cartItems := getCartItems()
+			expectedCartTotalPrice := 18600
+			actual := CalculateDiscountForEveryFourthOrder(cartItems)
+			require.Equal(t, expectedCartTotalPrice, actual)
+		})
+}
+
 func getCartItems() []model.CartItem {
 	return []model.CartItem{
 		{
@@ -111,4 +145,22 @@ func getCartItems() []model.CartItem {
 			QTYPrice:     2000,
 		},
 	}
+}
+
+func getOrders() []model.Order {
+	return []model.Order{
+		{
+			CustomerID: 1,
+			TotalPrice: 12000,
+		},
+		{
+			CustomerID: 1,
+			TotalPrice: 10000,
+		},
+		{
+			CustomerID: 1,
+			TotalPrice: 145,
+		},
+	}
+
 }

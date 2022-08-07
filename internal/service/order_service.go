@@ -1,10 +1,9 @@
 package service
 
 import (
-	"basket-api/internal/model"
 	"basket-api/internal/model/request"
 	"basket-api/internal/persistence"
-	"basket-api/internal/util"
+	"basket-api/internal/util/discount"
 	"context"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -50,9 +49,9 @@ func (o OrderServiceImp) CreateOrder(ctx context.Context, request request.OrderR
 
 	// check if the number of order is greater than 3 and cart price is greater and equal to given amount
 	if len(orders) > 3 && cart.TotalPrice >= viper.GetInt("threshold_for_discount.amount") {
-		isSuitableForDiscount := checkDiscountConditionsForEveryFourthOrder(&orders)
+		isSuitableForDiscount := discount.CheckDiscountConditionsForEveryFourthOrder(&orders)
 		if isSuitableForDiscount {
-			cart.TotalPrice = o.calculateDiscountForEveryFourthOrder(cart.Items)
+			cart.TotalPrice = discount.CalculateDiscountForEveryFourthOrder(cart.Items)
 		}
 	}
 
@@ -62,37 +61,4 @@ func (o OrderServiceImp) CreateOrder(ctx context.Context, request request.OrderR
 		return err
 	}
 	return nil
-}
-
-func (o OrderServiceImp) calculateDiscountForEveryFourthOrder(items []model.CartItem) int {
-	vatDiscountMap := util.GetVatToDiscountMap()
-	var newOrderPrice int
-	for _, item := range items {
-		if item.ProductVat == 1 {
-			newOrderPrice += item.Price
-			continue
-		}
-		if item.Discount < vatDiscountMap[item.ProductVat] {
-			item.Discount = vatDiscountMap[item.ProductVat]
-			priceWithoutDiscount := item.Quantity * item.QTYPrice
-			newDiscountPrice := priceWithoutDiscount - (priceWithoutDiscount * item.Discount / 100)
-			newOrderPrice += newDiscountPrice
-		}
-	}
-	return newOrderPrice
-}
-
-func checkDiscountConditionsForEveryFourthOrder(orders *[]model.Order) bool {
-	thresholdForDiscount := viper.GetInt("threshold_for_discount.amount")
-	counter := 0
-	for _, order := range *orders {
-		if order.TotalPrice >= thresholdForDiscount {
-			counter++
-		}
-	}
-	if counter%3 == 0 {
-		return true
-	} else {
-		return false
-	}
 }
