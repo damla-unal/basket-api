@@ -30,6 +30,8 @@ func NewOrderServiceImp(
 	}
 }
 
+//CreateOrder creates a new order by converting the customer's cart into an order.
+//If a discount should be applied to this cart at this stage, it checks and applies.
 func (o OrderServiceImp) CreateOrder(ctx context.Context, request request.OrderRequest) error {
 	//get customers' cart info to create an order from cart items
 	cart, err := o.cartService.GetCustomerCart(ctx, request.CustomerID)

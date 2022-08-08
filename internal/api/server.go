@@ -15,6 +15,7 @@ type Server struct {
 	DbPool *pgxpool.Pool
 }
 
+//New create a new server
 func New() (*Server, error) {
 	var server = &Server{}
 	err := server.setupRouter()
@@ -25,6 +26,7 @@ func New() (*Server, error) {
 
 }
 
+//setupRouter creates default gin engine and db pool with pgxpool then add all routes to router group.
 func (s *Server) setupRouter() error {
 	//gin.Default returns an Engine instance with the Logger and Recovery middleware already attached.
 	router := gin.Default()
@@ -69,5 +71,6 @@ func (s *Server) setupRouter() error {
 //Run attaches the router to a http.Server and starts listening and serving HTTP requests.
 // It is a shortcut for http.ListenAndServe(addr, router)
 func (s *Server) Start(address string) error {
+	// router run on :8080 as a default
 	return s.router.Run(address)
 }

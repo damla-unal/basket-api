@@ -62,6 +62,7 @@ func (c CartServiceImp) GetCartByID(ctx context.Context, id int) (model.Cart, er
 
 }
 
+//AddItemToCart applies the discount of the product to be added to the cart and adds it to the cart.
 func (c CartServiceImp) AddItemToCart(ctx context.Context, request request.CartItemRequest) error {
 	customerCart, err := c.GetCustomerCart(ctx, request.CustomerID)
 	if err != nil {
@@ -94,6 +95,8 @@ func (c CartServiceImp) AddItemToCart(ctx context.Context, request request.CartI
 	return nil
 }
 
+//DeleteItemFromCart canceled the discount of the product to be removed from the cart if discount is exist,
+// and remove it from the cart.
 func (c CartServiceImp) DeleteItemFromCart(ctx context.Context, itemID int) error {
 	foundCartItem, err := c.cartItemDAO.GetCartItemByID(ctx, itemID)
 	if err != nil {

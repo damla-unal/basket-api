@@ -17,6 +17,8 @@ func AddProductRoutes(r *gin.RouterGroup, productDAO persistence.ProductDAO) *gi
 	return productRoutes
 }
 
+//listProducts endpoint list all products as a list.
+// GET localhost:8080/api/products
 func listProducts(productDAO persistence.ProductDAO) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		ctx := context.Request.Context()

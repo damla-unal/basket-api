@@ -16,6 +16,9 @@ func AddOrderRoutes(r *gin.RouterGroup, orderService service.OrderService) *gin.
 	return orderRoutes
 }
 
+//createOrder endpoint creates a new order.
+//Customer id is taken as request body.
+// POST localhost:8080/api/orders
 func createOrder(orderService service.OrderService) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		ctx := context.Request.Context()

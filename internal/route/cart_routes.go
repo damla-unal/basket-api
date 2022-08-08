@@ -21,6 +21,8 @@ func AddCartRoutes(r *gin.RouterGroup, cartService service.CartService) *gin.Rou
 	return cartRoutes
 }
 
+//showCustomerCart endpoint takes a customer-id as query parameter and return cart details of this customer
+// GET localhost:8080/api/cart?customer-id=1
 func showCustomerCart(cartService service.CartService) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		ctx := context.Request.Context()
@@ -41,6 +43,9 @@ func showCustomerCart(cartService service.CartService) gin.HandlerFunc {
 
 }
 
+//addItemToCart endpoint adds the product selected by the customer to their cart.
+//Customer id and product id are taken as request body.
+// POST localhost:8080/api/cart/items
 func addItemToCart(cartService service.CartService) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		ctx := context.Request.Context()
@@ -61,6 +66,9 @@ func addItemToCart(cartService service.CartService) gin.HandlerFunc {
 	}
 }
 
+//deleteItemFromCart endpoint deletes/remove the product selected by the customer of their cart.
+//It takes cart item id selected by customer as path variable.
+// DELETE localhost:8080/api/cart/items/:id
 func deleteItemFromCart(cartService service.CartService) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		ctx := context.Request.Context()

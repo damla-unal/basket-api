@@ -24,7 +24,6 @@ func NewCartDAOPostgres(dbPool *pgxpool.Pool) CartDAOPostgres {
 }
 
 func (c CartDAOPostgres) GetCartByCustomerID(ctx context.Context, customerID int) (model.Cart, error) {
-
 	var customerCart model.Cart
 	resErr := c.dbPool.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
 		cart, err := db.New(conn).GetCartByCustomerID(ctx, int64(customerID))
