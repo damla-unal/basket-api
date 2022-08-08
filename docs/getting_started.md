@@ -1,5 +1,17 @@
+### Installing Required Packages
+    . postgres
+    . golang-migrate
+    . mockery
+    . sqlc
 
-###Installing Postgres
+Install packages
+
+`$ brew install golang-migrate postgres mockery sqlc` 
+OR
+
+Run `scripts/bootstrap.sh`
+
+### Installing Postgres
 
 1. Install and run Postgresql
    1. if you use Mac, you can follow this steps : 

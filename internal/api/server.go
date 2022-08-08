@@ -37,12 +37,15 @@ func (s *Server) setupRouter() error {
 		return err
 	}
 
+	// check app health
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "hello world",
 		})
 	})
 
+	//creates a new router group named basketApiGroup.
+	//add all the routes that have common middlewares or the same path prefix.
 	basketApiGroup := router.Group("/api")
 	cartDAO := persistence.NewCartDAOPostgres(dbPool)
 	cartItemDAO := persistence.NewCartItemDAOPostgres(dbPool)
