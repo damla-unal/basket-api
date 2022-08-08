@@ -7,7 +7,7 @@ The basket service is a REST API developed in Go.
 Customers will be able to purchase existing products. Product creation, update, deletion or user creation etc for the admin use cases are not yet developed. 
 You can import the necessary data to run the customer usecase scenarios to the database from the csv files under the data folder.
 
-You can find the detailed documentation of the project under the docs.
+You can find the detailed documentation of the project under the [docs.](https://github.com/damla-unal/basket-api/tree/main/docs)
 
 ----
 ## Getting Started
@@ -130,7 +130,8 @@ Main applications for this project. By taking the application configs from the c
 
 ## Diagram
 
-![image not found](docs/Screen Shot 2022-08-08 at 10.05.34.png)
+<img src="https://github.com/damla-unal/basket-api/blob/d2cc91381658eaf6a0e07e14caacfc6d209456c6/docs/Screen%20Shot%202022-08-08%20at%2010.05.34.png?raw=true" width="750" height="700">
+
 ----
 
 
